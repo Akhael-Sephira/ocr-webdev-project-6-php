@@ -21,13 +21,14 @@ class AuthController {
         );
         if (!$user) return;
 
-        $headers = ['alg'=>'HS256', 'typ'=>'JWT'];
-        $payload = ['userId'=>$user->id,'exp'=>time() + JWT_EXP_TIME];
-        $jwt = JWT::generate_token($headers, $payload, getenv('SECRET_KEY'));
+        $jwt = new JWT([
+            'userId'=>$user->id,
+            'exp'=>time() + JWT_EXP_TIME
+        ]);
 
         $res = [
             'userId' => $user->id,
-            'token' => $jwt,
+            'token' => $jwt->sign(getenv('SECRET_KEY')),
         ];
         echo json_encode($res);
     }
