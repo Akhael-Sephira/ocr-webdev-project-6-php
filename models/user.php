@@ -3,8 +3,6 @@
 require_once('./utility/db_model.php');
 
 define('SALT_FACTOR', 10);
-define('MAX_LOGIN_ATTEMPTS', 3);
-define('LOCK_TIME', 60);
 
 enum FailedSignup {
     case InvalidEmail;
@@ -81,9 +79,10 @@ class User extends DBModel {
             $this->loginAttempts = 0;
             $this->lockUntil = NULL;
         }
+        $config = include('./config.php');
         $this->loginAttempts++;
-        if ($this->loginAttempts >= MAX_LOGIN_ATTEMPTS && !$this->isLocked()) {
-            $this->lockUntil = time() + LOCK_TIME;
+        if ($this->loginAttempts >= $config->auth['max_login_attempts'] && !$this->isLocked()) {
+            $this->lockUntil = time() + $config->auth['lock_time'];
         }
         $this->update(['loginAttempts', 'lockUntil']);
     }

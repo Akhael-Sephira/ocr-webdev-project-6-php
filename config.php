@@ -1,9 +1,18 @@
 <?php 
 
-putenv("SERVER_NAME=localhost");
-putenv("USERNAME=root");
-putenv("PASSWORD=");
-putenv("DB_NAME=myDB");
-putenv("SECRET_KEY=MySecretKey");
+return (object) [
+    'db' => [
+        'server_name' => 'localhost',
+        'username' => 'root',
+        'password' => '',
+        'name' => 'myDB',
+    ],
+    'auth' => [
+        'secret' => 'MySecretKey',
+        'jwt_exp' => 10 * 60, // In seconds
+        'max_login_attempts' => 3,
+        'lock_time' => 60, // In seconds
+    ]
+]
 
 ?>

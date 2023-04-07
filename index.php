@@ -1,6 +1,5 @@
 <?php
 
-require_once('config.php');
 require_once('utility/app.php');
 require_once('routes/auth.php');
 
