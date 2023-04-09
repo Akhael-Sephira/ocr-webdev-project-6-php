@@ -6,7 +6,7 @@ include('./utility/jwt.php');
 define('JWT_EXP_TIME', 60*60);
 
 class AuthController {
-    static public function signup() {
+    static public function signup($req, $res) {
         $user = new User([
             'email' => $_POST['email'] ?? '',
             'password' => $_POST['password'] ?? '',
@@ -14,7 +14,7 @@ class AuthController {
         $user->save();
     }
     
-    static public function login() {
+    static public function login($req, $res) {
         $user = User::getAuthenticated(
             $_POST['email'] ?? '',
             $_POST['password'] ?? ''
@@ -25,11 +25,11 @@ class AuthController {
         $payload = ['userId'=>$user->id,'exp'=>time() + JWT_EXP_TIME];
         $jwt = JWT::generate_token($headers, $payload, getenv('SECRET_KEY'));
 
-        $res = [
+        $data = [
             'userId' => $user->id,
             'token' => $jwt,
         ];
-        echo json_encode($res);
+        $res->status(200)->json($data);
     }
 }
 
