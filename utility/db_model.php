@@ -1,5 +1,7 @@
 <?php 
 
+require_once('database.php');
+
 class DBModel {
 
     public static $schema = [
@@ -17,18 +19,14 @@ class DBModel {
         return static::class . "s";
     }
 
-    public static function find($where, $args, $parameters) {
+    public static function find($where, $params, $limit = 1) {
         try {
-            $stmt = DBLink->prepare("SELECT * FROM" .
-             " " . static::getTableName() . 
-             " WHERE " . $where .
-             " " . $parameters
-            );
-            foreach($args as $key => $value) {
-                $stmt->bindParam($key, $value);
-            }
-            $stmt->execute();
-            $result = $stmt->fetch();
+            $result = Database::run(
+                "SELECT * FROM " .
+                static::getTableName() . 
+                " WHERE $where LIMIT $limit", 
+                $params
+            )->fetch();
             if (!$result) return false;
             $object = new static($result); 
             return $object;
@@ -43,12 +41,13 @@ class DBModel {
 
         try {
             $keys = array_keys(static::$schema);
-            $stmt = DBLink->prepare("INSERT INTO Users (" . join(",", $keys) . ") 
-                VALUES (". join(",", array_map(function($n) {return ":" . $n;}, $keys)) .")");
+            $sql = "INSERT INTO Users (" . join(",", $keys) . ") 
+                VALUES (". join(",", array_map(function($n) {return ":" . $n;}, $keys)) .")";
+            $params = [];
             foreach($keys as $key) {
-                $stmt->bindParam(":" . $key, $this->{$key});
-            }
-            $stmt->execute();
+                $params[":" . $key] = $this->{$key};
+            };
+            Database::run($sql, $params);
         } catch(PDOException $e) {
             echo $e->getMessage();
         }
@@ -56,14 +55,14 @@ class DBModel {
     /** update all given keys of the instance on database */
     public function update($keys) {
         try {
-            $stmt = DBLink->prepare("UPDATE Users SET " . 
+            $sql = "UPDATE Users SET " . 
                 join(",", array_map(function($n) {return $n . " = :" . $n;}, $keys)) 
-                . " WHERE id=:id");
-            $stmt->bindParam(":id", $this->id);
+                . " WHERE id=:id";
+            $params = [":id" => $this->id];
             foreach($keys as $key) {
-                $stmt->bindParam(":" . $key, $this->{$key});
+                $params[":" . $key] = $this->{$key};
             }
-            $stmt->execute();
+            Database::run($sql, $params);
         } catch(PDOException $e) {
             echo $e->getMessage();
         }
@@ -76,8 +75,7 @@ class DBModel {
     /** Check if Model table exist - if not invoke static function createTable() */
     public static function verifyTable() {
         try {
-            $stmt = DBLink->prepare( "DESCRIBE `" . static::getTableName() . "`");
-            $stmt->execute();
+            Database::run( "DESCRIBE `" . static::getTableName() . "`");
             return true;    
         } catch(PDOException $e) {
             if ($e->getCode() !== "42S02") return false;
@@ -93,8 +91,7 @@ class DBModel {
             }
             $sql = substr($sql, 0, strlen($sql) - 1);
             $sql = $sql . ")";
-            $stmt = DBLink->prepare($sql);
-            $stmt->execute();
+            Database::run->prepare($sql);
             return true;
         } catch(PDOException $e) {
             return false;

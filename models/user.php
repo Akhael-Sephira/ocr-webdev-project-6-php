@@ -52,7 +52,7 @@ class User extends DBModel {
         $user = User::find(            
             "email = :email", 
             [':email'=> $_POST['email'] ?? ''],
-            "LIMIT 1"
+            1
         );
         if (!$user) return false;
         if ($user->isLocked()) return false;
