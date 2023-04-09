@@ -5,7 +5,7 @@ include('./utility/jwt.php');
 
 
 class AuthController {
-    static public function signup() {
+    static public function signup($req, $res) {
         $user = new User([
             'email' => $_POST['email'] ?? '',
             'password' => $_POST['password'] ?? '',
@@ -13,7 +13,7 @@ class AuthController {
         $user->save();
     }
     
-    static public function login() {
+    static public function login($req, $res) {
         $user = User::getAuthenticated(
             $_POST['email'] ?? '',
             $_POST['password'] ?? ''
@@ -27,11 +27,11 @@ class AuthController {
             'exp'=>time() + JWT_EXP_TIME
         ]);
 
-        $res = [
+        $data = [
             'userId' => $user->id,
             'token' => $jwt->sign(getenv('SECRET_KEY')),
         ];
-        echo json_encode($res);
+        $res->status(200)->json($data);
     }
 }
 
