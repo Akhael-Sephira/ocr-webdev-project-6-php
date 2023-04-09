@@ -24,12 +24,12 @@ class AuthController {
 
         $jwt = new JWT([
             'userId'=>$user->id,
-            'exp'=>time() + JWT_EXP_TIME
+            'exp'=>time() + $config->auth['jwt_exp']
         ]);
 
         $data = [
             'userId' => $user->id,
-            'token' => $jwt->sign(getenv('SECRET_KEY')),
+            'token' => $jwt->sign($config->auth['secret']),
         ];
         $res->status(200)->json($data);
     }
